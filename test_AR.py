@@ -28,7 +28,7 @@ def preProcessing(img):
 
 def getCountours(img):
     max_area = 0
-    biggest = np.array([[[0,0]],[[1,1]],[[2,2]],[[3,3]]])
+    biggest = np.array([[[0,0]],[[-100,-100]],[[-200,-200]],[[-300,-300]]])
     countours,hierarchy = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)  # retrival method, approximation method
     for cnt in countours:
         area = cv2.contourArea(cnt)
@@ -39,7 +39,7 @@ def getCountours(img):
             if area> max_area and len(approx) == 4:
                 biggest = approx
                 max_area = area
-    cv2.drawContours(imgcontour, biggest, -1, (255, 0, 0), 23)
+    cv2.drawContours(imgcontour, biggest, -1, (255, 0, 0), 25)
             # print(len(approx))
             # objCor = len(approx)
             # x, y, w, h = cv2.boundingRect(approx)
@@ -81,16 +81,22 @@ def augmentimg(biggest, img, imgAug):
 
     h,w,c = imgAug.shape
 
+    cv2.putText(img,"Weather", (biggest[3][0][0],biggest[3][0][1]+30), cv2.FONT_HERSHEY_COMPLEX, 1, (255,255,0), 2)
+    cv2.putText(img,"Cloudy", (biggest[3][0][0],biggest[3][0][1]+60), cv2.FONT_HERSHEY_COMPLEX, 1, (255,255,0), 2)
+    cv2.putText(img,"temp  22", (biggest[3][0][0],biggest[3][0][1]+90), cv2.FONT_HERSHEY_COMPLEX, 1, (0,0,255), 2)
 
     pts1 = np.array(biggest)
     pts2 = np.float32([[0,0],[w,0],[w,h],[0,h]])
     
     matrix, _ = cv2.findHomography(pts1,pts2)
-    print((matrix*img.shape[0]/100) + img.shape[0] )
     
     imgOutput = cv2.warpPerspective(imgAug,matrix,(img.shape[1],img.shape[0]))
 
-    cv2.fillConvexPoly(img,pts1.astype(int),(0,0,0))
+    # cv2.fillConvexPoly(img,pts1.astype(int),(255,255,0))
+    cv2.line(img, biggest[0][0], biggest[1][0], (0,255,0), 5) 
+    cv2.line(img, biggest[1][0], biggest[2][0], (0,255,0), 5) 
+    cv2.line(img, biggest[2][0], biggest[3][0], (0,255,0), 5) 
+    cv2.line(img, biggest[3][0], biggest[0][0], (0,255,0), 5) 
 
     imgOutput = img + imgOutput
 
@@ -102,8 +108,9 @@ while True:
     success , img = cap.read()
     img = cv2.resize(img, (framewidth, frameheight))
     
-    imgAug = cv2.imread('yyy.jpg')
-    # imgAug = cv2.resize(imgAug, (80, 80))
+    # imgAug = cv2.imread('yyy.jpg')
+    imgAug = cv2.imread('cloud.png')
+    imgAug = cv2.resize(imgAug, (80, 80))
 
 
 
